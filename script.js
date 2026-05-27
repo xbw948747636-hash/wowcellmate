@@ -1,119 +1,179 @@
-// 导航栏滚动效果
-const navbar = document.getElementById('navbar');
+const searchInput = document.getElementById("searchInput");
+const searchBtn = document.getElementById("searchBtn");
+const statusSection = document.getElementById("statusSection");
+const loadingState = document.getElementById("loadingState");
+const errorState = document.getElementById("errorState");
+const errorMessage = document.getElementById("errorMessage");
+const resultsSection = document.getElementById("resultsSection");
 
-window.addEventListener('scroll', () => {
-    if (window.scrollY > 60) {
-        navbar.classList.add('scrolled');
-    } else {
-        navbar.classList.remove('scrolled');
+// Role icons for display
+const ROLE_ICONS = { tank: "🛡️", healer: "💚", dps: "⚔️" };
+const ROLE_LABELS = { tank: "坦克", healer: "治疗", dps: "输出" };
+
+// Search handler
+async function doSearch() {
+  const raw = searchInput.value.trim();
+  if (!raw) return;
+
+  // Parse "角色名-服务器名"
+  const dashIndex = raw.lastIndexOf("-");
+  if (dashIndex < 1 || dashIndex === raw.length - 1) {
+    showError("格式错误", "请输入正确的格式：角色名称-服务器名称（如：张三-死亡之翼），中间用短横线（-）连接。");
+    return;
+  }
+
+  const name = raw.substring(0, dashIndex).trim();
+  const server = raw.substring(dashIndex + 1).trim();
+
+  if (!name || !server) {
+    showError("格式错误", "角色名称和服务器名称不能为空。");
+    return;
+  }
+
+  // Show loading
+  hideAll();
+  statusSection.style.display = "block";
+  loadingState.style.display = "flex";
+  loadingState.classList.add("loading-state");
+
+  try {
+    const url = `/api/character?name=${encodeURIComponent(name)}&server=${encodeURIComponent(server)}`;
+    const resp = await fetch(url);
+
+    if (!resp.ok) {
+      const body = await resp.json().catch(() => ({}));
+      if (resp.status === 404) {
+        showError("未找到该角色", body.detail || `服务器 "${server}" 中未找到角色 "${name}"，请检查名称和服务器是否正确。`);
+      } else if (resp.status === 429) {
+        showError("请求过于频繁", "请稍等片刻后再试。");
+      } else {
+        showError("查询失败", body.error || "服务暂时不可用，请稍后再试。");
+      }
+      return;
     }
-});
 
-// 平滑滚动到 hero 区域
-document.querySelector('.hero-scroll')?.addEventListener('click', () => {
-    document.getElementById('doors-windows')?.scrollIntoView({ behavior: 'smooth' });
-});
-
-// 滚动渐现动画
-const revealElements = document.querySelectorAll('.bento-card, .style-item, .gallery-item');
-
-const observer = new IntersectionObserver(
-    (entries) => {
-        entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('reveal', 'visible');
-                observer.unobserve(entry.target);
-            }
-        });
-    },
-    { threshold: 0.1, rootMargin: '0px 0px -40px 0px' }
-);
-
-revealElements.forEach((el) => {
-    el.classList.add('reveal');
-    observer.observe(el);
-});
-
-// 卡片点击弹出模态框
-const cardData = [
-    {
-        title: '冰裂纹花窗',
-        desc: '冰裂纹花窗是中国传统窗棂中的经典样式。其纹样仿照自然冰面开裂的形态，线条错落有致，既富有变化又浑然天成。在传统文化中，冰裂纹寓意"冰清玉洁"，象征主人品格高洁，常用于文人书房、庭院廊道等空间。',
-        detail: '材质：红木 / 楠木\n年代：明清时期盛行\n适用：书房、庭院、走廊'
-    },
-    {
-        title: '月洞门',
-        desc: '月洞门是中国园林建筑中最具诗意的门洞设计。圆形如满月，取"团圆""圆满"之吉祥寓意。穿门而过，景色豁然开朗，体现了中式园林"借景""框景"的造园手法。月洞门常设于庭院隔墙，作为空间过渡的点睛之笔。',
-        detail: '材质：青砖 / 石材 / 木材\n年代：宋代起流行于园林\n适用：庭院、花园隔断'
-    },
-    {
-        title: '隔扇门',
-        desc: '隔扇门又称"格扇门"，是中国传统建筑中最常见的室内门型。上部为镂空花格，可透光通风；下部为实心裙板，保证私密。隔扇门通常成组使用，偶数扇对开，雕刻内容涵盖花鸟、山水、吉祥纹样等，是实用与艺术的完美结合。',
-        detail: '材质：楠木 / 红木 / 榆木\n年代：唐宋至明清广泛应用\n适用：厅堂、正房、宫殿'
-    },
-    {
-        title: '漏窗',
-        desc: '漏窗俗称"花墙窗"，多见于江南园林的围墙之上。以瓦片、砖块拼砌出各式图案，如海棠、如意、扇形等。漏窗的作用在于"透"——透过窗洞可见墙外景致，却不见全貌，营造出"犹抱琵琶半遮面"的含蓄美感，引人探寻。',
-        detail: '材质：瓦片 / 青砖 / 陶土\n年代：明清时期园林建筑\n适用：园林围墙、庭院隔断'
-    },
-    {
-        title: '直棂窗',
-        desc: '直棂窗是最古老的中式窗型之一，以竖向木条（棂条）等距排列而成。结构简洁，透光均匀，具有良好的通风效果。在宫殿建筑中，直棂窗常配以精细的雕刻和彩绘；在民居中，则更注重实用与经济，是中国建筑中最具生命力的窗型。',
-        detail: '材质：松木 / 杉木 / 楠木\n年代：汉唐至今广泛使用\n适用：宫殿、庙宇、民居'
-    },
-    {
-        title: '垂花门',
-        desc: '垂花门是传统四合院中区分内外宅的重要门户。其最大特色是檐柱不落地，悬于半空，柱头雕以莲花、牡丹等垂花装饰，精美绝伦。垂花门不仅是建筑构件，更是家族地位与文化品味的象征，通常只有在重要场合才会开启。',
-        detail: '材质：红木 / 楠木 / 柏木\n年代：明清时期四合院\n适用：四合院内宅入口'
-    }
-];
-
-document.querySelectorAll('.bento-card').forEach((card, index) => {
-    card.addEventListener('click', () => {
-        const data = cardData[index];
-        if (!data) return;
-        showModal(data.title, data.desc, data.detail);
-    });
-});
-
-function showModal(title, desc, detail) {
-    // 移除已有模态框
-    const existing = document.querySelector('.modal-overlay');
-    if (existing) existing.remove();
-
-    const overlay = document.createElement('div');
-    overlay.className = 'modal-overlay';
-    overlay.innerHTML = `
-        <div class="modal-content">
-            <button class="modal-close">&times;</button>
-            <h2>${title}</h2>
-            <p class="modal-desc">${desc}</p>
-            <div class="modal-detail">
-                <h4>详细信息</h4>
-                <pre>${detail}</pre>
-            </div>
-        </div>
-    `;
-
-    document.body.appendChild(overlay);
-
-    // 动画入场
-    requestAnimationFrame(() => overlay.classList.add('active'));
-
-    // 关闭事件
-    const close = () => {
-        overlay.classList.remove('active');
-        setTimeout(() => overlay.remove(), 350);
-    };
-
-    overlay.querySelector('.modal-close').addEventListener('click', close);
-    overlay.addEventListener('click', (e) => {
-        if (e.target === overlay) close();
-    });
-    document.addEventListener('keydown', function escHandler(e) {
-        if (e.key === 'Escape') {
-            close();
-            document.removeEventListener('keydown', escHandler);
-        }
-    });
+    const data = await resp.json();
+    renderResults(data);
+  } catch (err) {
+    showError("网络错误", "无法连接到查询服务，请检查网络后重试。");
+  }
 }
+
+function hideAll() {
+  statusSection.style.display = "none";
+  loadingState.style.display = "none";
+  errorState.style.display = "none";
+  resultsSection.style.display = "none";
+}
+
+function showError(title, detail) {
+  hideAll();
+  statusSection.style.display = "block";
+  errorState.style.display = "block";
+  errorMessage.textContent = detail;
+}
+
+function renderResults(data) {
+  hideAll();
+  resultsSection.style.display = "flex";
+  window.scrollTo({ top: resultsSection.offsetTop - 40, behavior: "smooth" });
+
+  const { character, mythic_plus } = data;
+
+  // Character info
+  document.getElementById("charName").textContent = `${character.name} - ${character.realm}`;
+  document.getElementById("charDetail").textContent = [
+    character.spec && `${character.spec}`,
+    character.class,
+    character.faction
+  ].filter(Boolean).join(" · ");
+
+  document.getElementById("charIlvl").textContent = character.item_level || "—";
+  document.getElementById("charSpec").textContent = character.spec || "—";
+
+  const profileLink = document.getElementById("charProfileLink");
+  if (character.profile_url) {
+    profileLink.href = character.profile_url;
+    profileLink.style.display = "";
+  } else {
+    profileLink.style.display = "none";
+  }
+
+  const thumb = document.getElementById("charThumbnail");
+  if (character.thumbnail) {
+    thumb.src = character.thumbnail;
+    thumb.style.display = "";
+  } else {
+    thumb.style.display = "none";
+  }
+
+  // Score
+  const scoreEl = document.getElementById("totalScore");
+  scoreEl.textContent = mythic_plus.total_score.toFixed(1);
+  scoreEl.className = "score-value " + (mythic_plus.score_color || "none");
+
+  // Role scores
+  const rolesDiv = document.getElementById("scoreRoles");
+  const scores = mythic_plus.scores_by_role || {};
+  const roleEntries = [
+    { key: "tank", label: "坦克", icon: "🛡️" },
+    { key: "healer", label: "治疗", icon: "💚" },
+    { key: "dps", label: "输出", icon: "⚔️" }
+  ];
+  rolesDiv.innerHTML = roleEntries
+    .filter(r => scores[r.key] > 0)
+    .map(r =>
+      `<div class="role-score">
+        <span class="role-icon">${r.icon}</span>
+        <span class="role-name">${r.label}</span>
+        <span class="role-value">${scores[r.key].toFixed(1)}</span>
+      </div>`
+    ).join("");
+
+  // Dungeon cards
+  const grid = document.getElementById("dungeonsGrid");
+  const runs = mythic_plus.best_runs || [];
+
+  if (runs.length === 0) {
+    grid.innerHTML = `<div class="dungeons-empty">该角色当前赛季暂无大秘境通关记录</div>`;
+  } else {
+    // Sort by level desc, then score desc
+    runs.sort((a, b) => b.level - a.level || b.score - a.score);
+
+    grid.innerHTML = runs.map(run => {
+      const timed = run.timed;
+      const levelClass = "l" + Math.min(run.level, 18);
+
+      return `
+        <div class="dungeon-card ${timed ? "timed" : "untimed"}">
+          <div class="dungeon-name" title="${run.dungeon}">${run.display_name || run.short_name || run.dungeon}</div>
+          <div class="dungeon-level ${levelClass}">+${run.level}</div>
+          <div class="dungeon-meta">
+            <span class="dungeon-score">${run.score.toFixed(1)} 分</span>
+            <span class="dungeon-badge ${timed ? "badge-timed" : "badge-untimed"}">${timed ? "限时" : "超时"}</span>
+          </div>
+        </div>
+      `;
+    }).join("");
+  }
+}
+
+// Event listeners
+searchBtn.addEventListener("click", doSearch);
+searchInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") doSearch();
+});
+
+// Quick search preset cards
+document.querySelectorAll(".preset-card").forEach(card => {
+  card.addEventListener("click", () => {
+    const query = card.dataset.query;
+    searchInput.value = query;
+    document.querySelectorAll(".preset-card").forEach(c => c.classList.remove("active-preset"));
+    card.classList.add("active-preset");
+    doSearch();
+  });
+});
+
+// Focus input on load
+searchInput.focus();
