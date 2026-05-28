@@ -591,6 +591,182 @@ body {
   font-size: 0.9rem;
 }
 
+/* ===== Dungeon Card Expandable ===== */
+.dungeon-card {
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.dungeon-card.expanded {
+  grid-column: 1 / -1;
+  border-color: var(--gold-dim);
+  background: var(--bg-card-hover);
+}
+
+.dungeon-card-top {
+  position: relative;
+}
+
+.roster-toggle-hint {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-align: center;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid transparent;
+  transition: all var(--transition);
+  letter-spacing: 0.04em;
+}
+
+.dungeon-card:hover .roster-toggle-hint {
+  border-top-color: var(--border);
+  color: var(--gold);
+}
+
+.dungeon-card.expanded .roster-toggle-hint {
+  border-top-color: var(--border);
+  color: var(--gold);
+}
+
+/* Affix tags */
+.affix-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.affix-tag {
+  font-size: 0.62rem;
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: rgba(201, 160, 60, 0.1);
+  color: var(--gold-dim);
+  white-space: nowrap;
+}
+
+/* Roster panel */
+.roster-panel {
+  border-top: 1px solid var(--border);
+  margin-top: 10px;
+  padding-top: 10px;
+  animation: rosterSlideIn 0.2s ease;
+}
+
+@keyframes rosterSlideIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.roster-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 16px;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+}
+
+.roster-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--border);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.roster-error {
+  text-align: center;
+  padding: 12px;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.roster-member {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  border-bottom: 1px solid rgba(42, 42, 69, 0.4);
+  gap: 12px;
+}
+
+.roster-member:last-child {
+  border-bottom: none;
+}
+
+.roster-member-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
+}
+
+.roster-role-icon {
+  font-size: 1rem;
+  flex-shrink: 0;
+  width: 24px;
+  text-align: center;
+}
+
+.roster-member-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.roster-member-name {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.roster-clickable {
+  cursor: pointer;
+  border-bottom: 1px dashed transparent;
+  transition: all var(--transition);
+}
+
+.roster-clickable:hover {
+  color: var(--gold);
+  border-bottom-color: var(--gold-dim);
+}
+
+.roster-member-spec {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+}
+
+.roster-member-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex-shrink: 0;
+}
+
+.roster-score-label {
+  font-size: 0.6rem;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+}
+
+.roster-score {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.roster-score--na {
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
 /* ===== Footer ===== */
 .app-footer {
   text-align: center;
@@ -615,4 +791,6 @@ body {
   .score-value { font-size: 2.2rem; }
   .score-roles { width: 100%; justify-content: flex-start; }
   .dungeons-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+  .dungeon-card.expanded { grid-column: 1 / -1; }
+  .roster-member { flex-wrap: wrap; }
 }

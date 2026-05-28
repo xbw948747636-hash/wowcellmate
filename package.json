@@ -2,13 +2,16 @@
   "name": "wow-mythic-plus-query",
   "version": "1.0.0",
   "description": "魔兽世界史诗大秘境角色查询工具",
-  "main": "server.js",
+  "main": "fc-handler.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node server.js"
+    "start": "node fc-handler.js",
+    "dev": "node fc-handler.js",
+    "deploy": "s deploy --assume-yes"
   },
-  "dependencies": {},
-  "devDependencies": {
+  "dependencies": {
     "express": "^4.21.0"
+  },
+  "devDependencies": {
+    "serverless-tencent-scf": "^0.1.36"
   }
 }
